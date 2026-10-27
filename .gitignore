@@ -6,3 +6,6 @@
 # This is a nested clone. The unpacked source copy under vscode-mcp-bridge-src
 # is tracked by this repository instead.
 bridge-setup-20260824/vscode-mcp-bridge/
+
+# Temporary artifacts from the fdautodebugtool workspace.
+fdautodebugtool-temp-20260824/
