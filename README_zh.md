@@ -141,7 +141,6 @@ http://127.0.0.1:3333/sse
 │   ├── skills-output/                # 生成的技能产物
 │   ├── vscode-mcp-bridge-src/        # VS Code 扩展源码
 │   └── vscode-mcp-bridge-main.zip    # 保留的源码压缩包
-└── fdautodebugtool-temp-20260824/    # 相关集成产物
 ```
 
 ## 安全说明

@@ -141,7 +141,6 @@ The status-bar item shows the active port and current connection count.
 │   ├── skills-output/                # Generated skill output
 │   ├── vscode-mcp-bridge-src/        # VS Code extension source
 │   └── vscode-mcp-bridge-main.zip    # Preserved source archive
-└── fdautodebugtool-temp-20260824/    # Related integration artifacts
 ```
 
 ## Security notes
