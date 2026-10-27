@@ -1,0 +1,4 @@
+interface:
+  display_name: "连接 VS Code Bridge"
+  short_description: "为单个或多个 VS Code 项目建立独立 MCP 连接"
+  default_prompt: "连接当前项目对应的 VS Code Bridge，并验证工作区身份。"

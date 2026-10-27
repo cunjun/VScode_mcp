@@ -1,0 +1,4 @@
+interface:
+  display_name: "Connect VS Code Bridge"
+  short_description: "Connect one or more VS Code workspaces independently"
+  default_prompt: "Connect the Bridge for the current VS Code workspace and verify its identity."
