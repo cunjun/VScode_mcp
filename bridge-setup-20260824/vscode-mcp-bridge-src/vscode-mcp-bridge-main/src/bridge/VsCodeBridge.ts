@@ -407,7 +407,7 @@ export class VsCodeBridge {
   // --- Execute VS Code Command ---
 
   async executeCommand(command: string, args: Array<unknown> = [], allowedCommands: Array<string> = []): Promise<unknown> {
-    if (allowedCommands.length > 0 && !allowedCommands.includes(command)) {
+    if (!allowedCommands.includes(command)) {
       throw new Error(`Command '${command}' is not in the allowed commands list`)
     }
     return vscode.commands.executeCommand(command, ...args)

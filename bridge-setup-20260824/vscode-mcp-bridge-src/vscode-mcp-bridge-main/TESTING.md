@@ -27,6 +27,14 @@
 
 ## Step 2: Verify the Server is Running
 
+The server prefers port 3333 and automatically tries 3334–3337. For the complete health, SSE, and workspace check, run:
+
+```bash
+npm run mcp:client -- check --workspace /absolute/path/open/in/vscode
+```
+
+This is the preferred smoke test. The manual commands below are useful when debugging the protocol itself.
+
 Run this in a terminal:
 
 ```bash
@@ -69,7 +77,7 @@ curl -s -X POST "http://127.0.0.1:3333/messages?sessionId=SESSION_ID" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
-**Expected:** A JSON response listing all 20 tools (`get_active_file`, `get_diagnostics`, `show_diff`, etc.)
+**Expected:** A JSON response listing all 27 tools (`get_active_file`, `get_diagnostics`, `show_diff`, etc.)
 
 ---
 

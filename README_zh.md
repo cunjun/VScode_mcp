@@ -44,7 +44,7 @@ VS Code MCP Bridge 扩展
       └── 受管终端进程
 ```
 
-扩展在 VS Code 启动完成后运行本地 HTTP 服务，默认连接地址为：
+扩展在 VS Code 启动完成后运行本地 HTTP 服务。默认从 3333 端口启动；如果端口已被其他 VS Code 窗口占用，会依次尝试 3334–3337。因此不要仅凭某个端口可访问就认定它属于目标工作区。
 
 ```text
 http://127.0.0.1:3333/sse
@@ -84,15 +84,51 @@ npm run package
 
 在 VS Code 中安装生成的 VSIX，然后重新加载编辑器。扩展会在 VS Code 启动完成后自动启动服务。
 
-### 3. 连接 MCP 客户端
+### 3. 自动发现并验证连接
 
-将客户端的 SSE 地址配置为：
+项目内置了跨平台 Node 客户端。它会探测 3333–3337、完成真实 SSE 握手，并校验当前 VS Code 工作区：
 
-```text
-http://127.0.0.1:3333/sse
+```bash
+cd bridge-setup-20260824/vscode-mcp-bridge-src/vscode-mcp-bridge-main
+npm run mcp:client -- check --workspace /你的/项目绝对路径
 ```
 
-具体配置格式取决于使用的 MCP 客户端。本仓库还保存了 Codex 工作流使用的 `connecting-vscode-bridge` 技能及安装说明。
+列出工具或调用只读工具：
+
+```bash
+npm run mcp:client -- list --workspace /你的/项目绝对路径
+npm run mcp:client -- call read_file \
+  '{"filePath":"/你的/项目绝对路径/src/main.cpp"}' \
+  --workspace /你的/项目绝对路径
+```
+
+修改文件时必须提供 `--workspace`。客户端会先调用 `get_workspace_info`，确认目标工作区完全匹配，并拒绝工作区外路径（包括通过符号链接逃逸的路径）：
+
+```bash
+# 先预览差异，不写文件
+npm run mcp:client -- call show_diff \
+  '{"filePath":"/你的/项目绝对路径/src/main.cpp","newContent":"完整的新内容"}' \
+  --workspace /你的/项目绝对路径
+
+# 确认后写入
+npm run mcp:client -- call write_file \
+  '{"filePath":"/你的/项目绝对路径/src/main.cpp","content":"完整的新内容"}' \
+  --workspace /你的/项目绝对路径
+```
+
+如果配置了 `mcpServer.authToken`，可通过 `--token` 或环境变量 `VSCODE_MCP_TOKEN` 传入。具体 Codex 注册流程参阅仓库中的 `connecting-vscode-bridge` 技能。
+
+### 4. Linux/macOS 本地安装
+
+```bash
+cd bridge-setup-20260824/vscode-mcp-bridge-src/vscode-mcp-bridge-main
+npm ci --include=optional
+npm run typecheck
+npm run package
+code --install-extension ./vscode-mcp-bridge-ext-0.2.5.vsix --force
+```
+
+安装后重新加载目标 VS Code 窗口，再运行上面的 `check` 命令。扩展已将运行依赖打包进 `out/extension.js`，生成 VSIX 时不会重复收集 `node_modules`。
 
 ## 可用能力
 
@@ -149,6 +185,7 @@ http://127.0.0.1:3333/sse
 - 如果不希望本机其他进程直接访问，请设置 `mcpServer.authToken`。
 - `mcpServer.allowedCommands` 应保持最小范围；空列表会禁止远程执行 VS Code 命令。
 - 执行可能产生明显影响的修改前，应检查 Diff 和终端命令。
+- 多窗口场景必须通过 `get_workspace_info` 校验工作区，不能只看健康检查或端口号。
 - 不要向仓库提交密码、API Key、访问令牌或机器专用凭据。
 
 ## 上游项目与许可证

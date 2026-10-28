@@ -44,7 +44,7 @@ VS Code MCP Bridge extension
       └── Managed terminal processes
 ```
 
-The extension starts an HTTP server when VS Code finishes loading. The default endpoint is:
+The extension starts an HTTP server when VS Code finishes loading. It prefers port 3333 and automatically tries 3334–3337 when another VS Code window already owns a port. A live port alone therefore does not identify the target workspace.
 
 ```text
 http://127.0.0.1:3333/sse
@@ -84,15 +84,36 @@ npm run package
 
 Install the generated VSIX in VS Code, then reload the editor. The server starts automatically after VS Code startup.
 
-### 3. Connect an MCP client
+### 3. Discover and verify the connection
 
-Configure the client to use the SSE endpoint:
+The bundled cross-platform Node client probes ports 3333–3337, performs a real SSE handshake, and verifies the open VS Code workspace:
 
-```text
-http://127.0.0.1:3333/sse
+```bash
+cd bridge-setup-20260824/vscode-mcp-bridge-src/vscode-mcp-bridge-main
+npm run mcp:client -- check --workspace /absolute/path/to/project
 ```
 
-The exact configuration format depends on the MCP client. This repository also contains the `connecting-vscode-bridge` skill and setup notes used by Codex-based workflows.
+Use `list` to inspect tools or `call` to invoke one. File-writing tools require `--workspace`; the client validates `get_workspace_info` and rejects paths outside that workspace, including symlink escapes.
+
+```bash
+npm run mcp:client -- call read_file \
+  '{"filePath":"/absolute/path/to/project/src/main.cpp"}' \
+  --workspace /absolute/path/to/project
+```
+
+Pass an optional bearer token with `--token` or `VSCODE_MCP_TOKEN`. The repository also contains the `connecting-vscode-bridge` skill for Codex registration and multi-window routing.
+
+### 4. Local installation on Linux/macOS
+
+```bash
+cd bridge-setup-20260824/vscode-mcp-bridge-src/vscode-mcp-bridge-main
+npm ci --include=optional
+npm run typecheck
+npm run package
+code --install-extension ./vscode-mcp-bridge-ext-0.2.5.vsix --force
+```
+
+Reload only the target VS Code window, then run the `check` command above. Runtime dependencies are bundled into `out/extension.js`, so VSIX packaging intentionally skips dependency collection.
 
 ## Available capabilities
 
@@ -149,6 +170,7 @@ The status-bar item shows the active port and current connection count.
 - Set `mcpServer.authToken` when local processes should not have unrestricted access.
 - Keep `mcpServer.allowedCommands` minimal; an empty list disables remote VS Code command execution.
 - Review diffs and terminal commands before allowing an agent to make consequential changes.
+- In multi-window setups, verify `get_workspace_info`; do not trust a health response or port number alone.
 - Do not commit passwords, API keys, access tokens, or machine-specific credentials.
 
 ## Upstream and license

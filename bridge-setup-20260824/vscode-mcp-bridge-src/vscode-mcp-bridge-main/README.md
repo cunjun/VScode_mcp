@@ -22,7 +22,7 @@ Install from VSIX or the VS Code Marketplace. The server starts automatically wh
 
 ### 2. Connect your MCP client
 
-The server runs on `http://127.0.0.1:3333` by default. Point your MCP client at:
+The server prefers `http://127.0.0.1:3333`. If that port is occupied, it tries 3334–3337. The status bar and `Copy Connection URL` command show the selected endpoint.
 
 ```
 http://127.0.0.1:3333/sse
@@ -30,11 +30,21 @@ http://127.0.0.1:3333/sse
 
 Most tools have a config file or settings UI where you can add an MCP server — add the URL above as an SSE transport.
 
-### 3. Verify
+### 3. Verify the SSE connection and workspace
 
 ```bash
-curl http://127.0.0.1:3333/health
+npm run mcp:client -- check --workspace /absolute/path/to/project
 ```
+
+This cross-platform client probes the fixed port range, performs a real MCP handshake, calls `get_workspace_info`, and rejects a mismatched workspace. A health response alone is not sufficient in a multi-window setup.
+
+```bash
+npm run mcp:client -- call read_file \
+  '{"filePath":"/absolute/path/to/project/src/main.cpp"}' \
+  --workspace /absolute/path/to/project
+```
+
+File-mutating tools require `--workspace` and reject paths outside it, including symlink escapes. Pass authentication with `--token` or `VSCODE_MCP_TOKEN` when configured.
 
 ## Commands (`Cmd+Shift+P`)
 
@@ -154,4 +164,4 @@ Events arrive as MCP `notifications/message` log messages with `data.type` set t
 
 ## Security
 
-The server only listens on `127.0.0.1` (localhost) — it is not reachable from other machines on your network. For shared or remote environments, set `mcpServer.authToken` in VS Code settings to require a bearer token on all connections.
+The server only listens on `127.0.0.1` (localhost) — it is not reachable from other machines on your network. For shared or remote environments, set `mcpServer.authToken` in VS Code settings to require a bearer token on all connections. An empty `mcpServer.allowedCommands` list denies every `execute_vscode_command` request.
